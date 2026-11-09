@@ -152,6 +152,68 @@
   .setup input { width: 100%; font-size: 16px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; -webkit-appearance: none; }
   .btn { display: inline-block; margin: 14px 10px 0 0; padding: 11px 18px; border-radius: 12px; border: 0; background: var(--accent); color: #fff; font-size: 16px; }
   .btn.alt { background: var(--accent-soft); color: var(--accent); }
+  /* ---------- converter ---------- */
+  .conv { max-width: 760px; margin: 0 auto; }
+  .conv h1 { font-size: 30px; margin: 4px 0 14px; }
+  .field { display: block; margin-bottom: 12px; }
+  .field label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 5px; }
+  .field input, .field select {
+    display: block; width: 100%; font-size: 22px; padding: 10px 12px;
+    border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink);
+    -webkit-appearance: none; appearance: none; outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select {
+    padding-right: 38px;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23b5532c' stroke-width='2'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+  }
+  .frow { display: -webkit-flex; display: flex; }
+  .frow .field { -webkit-flex: 1; flex: 1; }
+  .frow .field + .field { margin-left: 12px; }
+  .res-h { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 8px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); grid-gap: 10px; }
+  .tile { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+  .tile.from { background: var(--accent-soft); border-color: var(--accent); }
+  .tile .v { font-size: 26px; font-weight: bold; line-height: 1.2; }
+  .tile .u { font-size: 15px; color: var(--muted); }
+  .ref { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 17px; }
+  .ref td, .ref th { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); }
+  .ref th { font-size: 14px; color: var(--muted); font-weight: normal; }
+  /* ---------- select mode + shopping list ---------- */
+  .top-row { -webkit-flex-wrap: wrap; flex-wrap: wrap; }
+  .card { position: relative; }
+  .selpad .card:after {
+    content: ""; position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 16px;
+    border: 2px solid var(--line); background: #fff; color: #fff; text-align: center; line-height: 28px; font-weight: bold;
+  }
+  .selpad .card.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .selpad .card.sel:after { content: "\2713"; background: var(--accent); border-color: var(--accent); }
+  .wrap.selpad { padding-bottom: 110px; }
+  .selbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
+    background: var(--card); border-top: 1px solid var(--line); padding: 12px 18px;
+    box-shadow: 0 -4px 16px rgba(0,0,0,.06);
+  }
+  .selbar span { -webkit-flex: 1; flex: 1; font-size: 18px; }
+  .selbar .btn { margin: 0; }
+  .btn[disabled] { opacity: .4; }
+  .rchip {
+    display: inline-block; margin: 0 8px 8px 0; border: 1px solid var(--line); background: var(--accent-soft);
+    border-radius: 999px; padding: 7px 14px; font-size: 15px;
+  }
+  .rchip .x { color: var(--accent); font-weight: bold; margin-left: 4px; }
+  ul.shop li { padding-right: 40px; }
+  ul.shop li .src { display: block; font-size: 13px; color: var(--muted); }
+  .rmx { position: absolute; right: 0; top: 4px; border: 0; background: none; font-size: 24px; color: var(--muted); padding: 2px 10px; }
+  .addrow { -webkit-align-items: flex-end; align-items: flex-end; }
+  .addrow .btn { margin: 0 0 12px 12px; }
+  .shopv { max-width: 1000px; }
+  @media (min-width: 900px) {
+    .aisles { -webkit-column-count: 2; column-count: 2; -webkit-column-gap: 28px; column-gap: 28px; }
+    .aisle { display: inline-block; width: 100%; -webkit-column-break-inside: avoid; break-inside: avoid; }
+  }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -162,7 +224,10 @@
     <button class="icon-btn hidden" id="backBtn">&#8249; All recipes</button>
     <h1 class="app-title serif" id="appTitle">Our Recipes</h1>
     <button class="icon-btn hidden" id="sizeBtn" title="Text size">Aa</button>
-    <button class="icon-btn" id="refreshBtn" title="Refresh">&#8635; Refresh</button>
+    <button class="icon-btn hidden" id="selectBtn">Select</button>
+    <button class="icon-btn" id="convBtn" title="Measurement converter">&#8644; Convert</button>
+    <button class="icon-btn" id="shopBtn" title="Shopping list">&#128722; List</button>
+    <button class="icon-btn" id="refreshBtn" title="Refresh">&#8635;</button>
   </div>
   <div id="listControls">
     <input class="search" id="search" type="search" placeholder="Search recipes or ingredients" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -172,6 +237,11 @@
 </div>
 
 <div class="wrap" id="main"></div>
+
+<div class="selbar hidden" id="selBar">
+  <span id="selCount">Tap recipes to select</span>
+  <button class="btn" id="selAdd" disabled>Add to shopping list</button>
+</div>
 
 <script>
 /* =====================================================================
@@ -321,7 +391,17 @@ function loadFromCSV(text) {
 }
 
 /* ---------- data loading ---------- */
-function sheetUrl() { return SHEET_CSV_URL || store.get("sheetUrl") || ""; }
+function friendlyError(msg) { var e = new Error(msg); e.friendly = true; return e; }
+// Accepts a "Publish to web" link in either Web page (pubhtml) or CSV form
+function fixSheetUrl(u) {
+  if (!u || u === "demo") return u;
+  if (/\/pubhtml/.test(u)) {
+    var gid = /[?&#]gid=(\d+)/.exec(u);
+    u = u.replace(/\/pubhtml.*$/, "/pub?output=csv" + (gid ? "&gid=" + gid[1] + "&single=true" : ""));
+  }
+  return u;
+}
+function sheetUrl() { return fixSheetUrl(SHEET_CSV_URL || store.get("sheetUrl") || ""); }
 
 function refresh() {
   var url = sheetUrl();
@@ -335,11 +415,11 @@ function refresh() {
   var bust = (url.indexOf("?") > -1 ? "&" : "?") + "_=" + Date.now();
   fetch(url + bust, { cache: "no-store" })
     .then(function (res) {
-      if (!res.ok) throw new Error("The sheet returned an error (" + res.status + ").");
+      if (!res.ok) throw friendlyError("The recipe sheet returned an error (" + res.status + "). Make sure it's still published to the web.");
       return res.text();
     })
     .then(function (text) {
-      if (/^\s*</.test(text)) throw new Error("That link returned a web page, not CSV. Re-check the Publish to web step and choose CSV.");
+      if (/^\s*</.test(text)) throw friendlyError("That link returned a web page, not CSV. Re-check the Publish to web step and choose CSV.");
       loadFromCSV(text);
       store.set("cachedCSV", text);
       store.set("cachedAt", String(Date.now()));
@@ -354,7 +434,9 @@ function refresh() {
         state.lastUpdated = new Date(parseInt(store.get("cachedAt") || "0", 10));
         state.error = "";
       } else {
-        state.error = (err && err.message) ? err.message : "Couldn't load recipes.";
+        // Our own errors (bad status, not CSV) are specific; network failures ("Load failed") are not.
+        state.error = (err && err.friendly) ? err.message :
+          "Couldn't reach the recipe sheet. Check the Wi-Fi, then tap ↻. If it keeps failing, make sure the sheet is still published to the web.";
       }
       route();
     });
@@ -421,6 +503,10 @@ function renderList() {
   $("sizeBtn").className = "icon-btn hidden";
   $("appTitle").className = "app-title serif";
   $("listControls").className = "";
+  $("selectBtn").className = "icon-btn";
+  $("selectBtn").innerHTML = state.selecting ? "Cancel" : "Select";
+  $("main").className = "wrap" + (state.selecting ? " selpad" : "");
+  updateSelBar();
 
   var cats = ["All"].concat(allCategories()), chips = "";
   for (var i = 0; i < cats.length; i++) {
@@ -436,7 +522,8 @@ function renderList() {
     var meta = [];
     if (r.categories.length) meta.push(esc(r.categories.join(", ")));
     var t = timeLabel(r); if (t) meta.push(esc(t));
-    html += '<button class="card" data-slug="' + esc(r.slug) + '">' +
+    if (onList(r.slug)) meta.push("🛒 On list");
+    html += '<button class="card' + (state.selecting && state.selected[r.slug] ? " sel" : "") + '" data-slug="' + esc(r.slug) + '">' +
       (r.photo ? '<img class="card-img" src="' + esc(r.photo) + '" alt="" onerror="this.style.display=\'none\'">' : "") +
       '<div class="card-body"><div class="card-title serif">' + esc(r.title) + '</div>' +
       '<div class="card-meta">' + meta.join(" · ") + "</div></div></button>";
@@ -504,7 +591,9 @@ function renderRecipe(r) {
   }
 
   $("main").innerHTML =
-    '<div class="r-head"><h1 class="r-title serif">' + esc(r.title) + '</h1><div class="r-meta">' + meta + "</div></div>" +
+    '<div class="r-head"><h1 class="r-title serif">' + esc(r.title) + '</h1><div class="r-meta">' + meta + "</div>" +
+      '<button class="btn' + (onList(r.slug) ? " alt" : "") + '" id="addShop" style="margin-top:4px">' +
+      (onList(r.slug) ? "✓ On shopping list" : "+ Add to shopping list") + "</button></div>" +
     (r.photo ? '<img class="r-photo" src="' + esc(r.photo) + '" alt="" onerror="this.style.display=\'none\'">' : "") +
     '<div class="cols">' +
       '<div class="col left" id="ingCol"><h2 class="serif">Ingredients</h2><p class="hint">Tap to check off</p>' + renderIngredients(r) + "</div>" +
@@ -527,6 +616,455 @@ function renderSetup() {
     '<p class="hint" style="margin-top:16px">Tip: it\'s easier to paste the link into the <code>SHEET_CSV_URL</code> line at the top of index.html before you upload it.</p></div>';
 }
 
+/* ---------- measurement converter ---------- */
+// Volume units in ml, weight units in grams (US customary measures)
+var VOL = { tsp: 4.92892, tbsp: 14.7868, cup: 236.588, floz: 29.5735, pint: 473.176, quart: 946.353, gallon: 3785.41, ml: 1, l: 1000 };
+var WT = { oz: 28.3495, lb: 453.592, g: 1, kg: 1000 };
+var UNIT_LABEL = { tsp: "tsp", tbsp: "tbsp", cup: "cup", floz: "fl oz", pint: "pint", quart: "quart", gallon: "gallon",
+  ml: "ml", l: "liter", oz: "oz (weight)", lb: "lb", g: "grams", kg: "kg" };
+var UNIT_ORDER = ["tsp", "tbsp", "cup", "floz", "pint", "quart", "gallon", "ml", "l", "oz", "lb", "g", "kg"];
+// Approximate grams per US cup (standard baking averages)
+var INGREDIENTS = [
+  ["Water / milk / broth", 237],
+  ["All-purpose or bread flour", 120],
+  ["Whole wheat flour", 113],
+  ["Granulated sugar", 198],
+  ["Brown sugar (packed)", 213],
+  ["Powdered sugar", 113],
+  ["Butter", 227],
+  ["Vegetable or olive oil", 198],
+  ["Honey / molasses", 336],
+  ["Yogurt / sour cream", 227],
+  ["Rolled oats", 89],
+  ["Cocoa powder", 84],
+  ["Chocolate chips", 170],
+  ["Table salt", 288]
+];
+
+var conv = { amount: "1", unit: "cup", ing: 0, temp: "350", tempUnit: "F", prevHash: "" };
+
+function parseAmount(s) {
+  s = String(s || "")
+    .replace(/½/g, " 1/2").replace(/¼/g, " 1/4").replace(/¾/g, " 3/4")
+    .replace(/⅓/g, " 1/3").replace(/⅔/g, " 2/3").replace(/⅛/g, " 1/8")
+    .replace(/,/g, ".").replace(/^\s+|\s+$/g, "");
+  if (!s) return NaN;
+  var parts = s.split(/\s+/), total = 0;
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i], m = /^(\d+)\/(\d+)$/.exec(p);
+    if (m) { if (+m[2] === 0) return NaN; total += m[1] / m[2]; }
+    else if (/^\d*\.?\d+$/.test(p)) total += parseFloat(p);
+    else return NaN;
+  }
+  return total;
+}
+
+function fmtDec(x) {
+  var d = x >= 100 ? 0 : (x >= 10 ? 1 : 2);
+  if (x > 0 && x < 0.01) return "<0.01";
+  return String(parseFloat(x.toFixed(d)));
+}
+
+// Nice kitchen fractions (eighths or thirds) for tsp / tbsp / cup
+function fmtFrac(x) {
+  if (x < 0.1) return fmtDec(x);
+  var best = null, dens = [8, 3, 4, 2];
+  for (var i = 0; i < dens.length; i++) {
+    var d = dens[i], n = Math.round(x * d), err = Math.abs(n / d - x);
+    if (!best || err < best.err - 1e-9) best = { n: n, d: d, err: err };
+  }
+  var whole = Math.floor(best.n / best.d), rem = best.n % best.d, g = rem, h = best.d, t;
+  while (h) { t = h; h = g % h; g = t; }               // reduce fraction
+  var s = (whole ? whole : "") + (rem ? (whole ? " " : "") + (rem / g) + "/" + (best.d / g) : "");
+  if (!s) s = "0";
+  return (best.err / x > 0.03 ? "≈ " : "") + s;
+}
+
+function fmtUnit(u, x) { return (u === "tsp" || u === "tbsp" || u === "cup") ? fmtFrac(x) : fmtDec(x); }
+
+function showUnit(u, x, from) {
+  if (u === from) return true;
+  if (u === "tsp") return x <= 48;
+  if (u === "tbsp") return x <= 64 && x >= 0.24;
+  if (u === "cup") return x >= 0.06;
+  if (u === "pint" || u === "quart" || u === "gallon" || u === "l" || u === "lb" || u === "kg") return x >= 0.25;
+  return true;
+}
+
+function tiles(units, base, table, from) {
+  var html = "";
+  for (var i = 0; i < units.length; i++) {
+    var u = units[i], x = base / table[u];
+    if (!showUnit(u, x, from)) continue;
+    html += '<div class="tile' + (u === from ? " from" : "") + '"><div class="v">' + esc(fmtUnit(u, x)) +
+      '</div><div class="u">' + esc(UNIT_LABEL[u]) + "</div></div>";
+  }
+  return '<div class="tiles">' + html + "</div>";
+}
+
+function convResults() {
+  var amt = parseAmount(conv.amount);
+  if (!(amt > 0)) return '<p class="hint">Enter an amount like 2, 1.5, 3/4, or 1 1/2.</p>';
+  var u = conv.unit, gpc = INGREDIENTS[conv.ing][1], ingName = INGREDIENTS[conv.ing][0];
+  var volUnits = ["tsp", "tbsp", "cup", "floz", "pint", "quart", "gallon", "ml", "l"];
+  var wtUnits = ["g", "oz", "lb", "kg"];
+  var html;
+  if (VOL[u]) {
+    var ml = amt * VOL[u];
+    html = '<div class="res-h">Volume</div>' + tiles(volUnits, ml, VOL, u) +
+      '<div class="res-h">Weight · approx. for ' + esc(ingName.toLowerCase()) + "</div>" +
+      tiles(wtUnits, ml / VOL.cup * gpc, WT, null);
+  } else {
+    var g = amt * WT[u];
+    html = '<div class="res-h">Weight</div>' + tiles(wtUnits, g, WT, u) +
+      '<div class="res-h">Volume · approx. for ' + esc(ingName.toLowerCase()) + "</div>" +
+      tiles(["tsp", "tbsp", "cup", "ml"], g / gpc * VOL.cup, VOL, null);
+  }
+  return html;
+}
+
+function tempResult() {
+  var t = parseFloat(String(conv.temp).replace(",", "."));
+  if (isNaN(t)) return '<p class="hint">Enter a temperature.</p>';
+  var out = conv.tempUnit === "F" ? Math.round((t - 32) * 5 / 9) + " °C" : Math.round(t * 9 / 5 + 32) + " °F";
+  return '<div class="tiles"><div class="tile from"><div class="v">' + esc(out) + '</div><div class="u">' +
+    esc(t + " °" + conv.tempUnit) + "</div></div></div>";
+}
+
+function renderConvert() {
+  $("backBtn").className = "icon-btn";
+  $("backBtn").innerHTML = "&#8249; Back";
+  $("sizeBtn").className = "icon-btn hidden";
+  $("convBtn").className = "icon-btn hidden";
+  $("appTitle").className = "app-title serif hidden";
+  $("listControls").className = "hidden";
+  setStatus("", false);
+
+  var unitOpts = "", ingOpts = "", i;
+  for (i = 0; i < UNIT_ORDER.length; i++) {
+    var u = UNIT_ORDER[i];
+    unitOpts += '<option value="' + u + '"' + (u === conv.unit ? " selected" : "") + ">" + esc(UNIT_LABEL[u]) + "</option>";
+  }
+  for (i = 0; i < INGREDIENTS.length; i++) {
+    ingOpts += '<option value="' + i + '"' + (i === conv.ing ? " selected" : "") + ">" + esc(INGREDIENTS[i][0]) + "</option>";
+  }
+  var oven = [250, 300, 325, 350, 375, 400, 425, 450, 475], rows = "";
+  for (i = 0; i < oven.length; i++) rows += "<tr><td>" + oven[i] + " °F</td><td>" + Math.round((oven[i] - 32) * 5 / 9) + " °C</td></tr>";
+
+  $("main").innerHTML =
+    '<div class="conv">' +
+    '<h1 class="serif">Convert</h1>' +
+    '<div class="col"><h2 class="serif">Amounts</h2>' +
+      '<div class="frow">' +
+        '<div class="field"><label for="cvAmt">Amount</label>' +
+          '<input id="cvAmt" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" value="' + esc(conv.amount) + '"></div>' +
+        '<div class="field"><label for="cvUnit">Unit</label><select id="cvUnit">' + unitOpts + "</select></div>" +
+      "</div>" +
+      '<div class="field"><label for="cvIng">Ingredient (for cups ↔ grams)</label><select id="cvIng">' + ingOpts + "</select></div>" +
+      '<div id="cvOut">' + convResults() + "</div>" +
+      '<p class="hint" style="margin-top:12px">Weights are standard averages and vary with how you scoop. Fractions are rounded to the nearest kitchen measure (≈ means approximate).</p>' +
+    "</div>" +
+    '<div class="col"><h2 class="serif">Temperature</h2>' +
+      '<div class="frow">' +
+        '<div class="field"><label for="cvTemp">Temperature</label>' +
+          '<input id="cvTemp" type="text" inputmode="decimal" autocomplete="off" value="' + esc(conv.temp) + '"></div>' +
+        '<div class="field"><label for="cvTempU">From</label><select id="cvTempU">' +
+          '<option value="F"' + (conv.tempUnit === "F" ? " selected" : "") + ">°F</option>" +
+          '<option value="C"' + (conv.tempUnit === "C" ? " selected" : "") + ">°C</option></select></div>" +
+      "</div>" +
+      '<div id="cvTempOut">' + tempResult() + "</div>" +
+      '<table class="ref"><tr><th>Common oven temps</th><th></th></tr>' + rows + "</table>" +
+    "</div></div>";
+}
+
+function onConvInput(e) {
+  var id = e.target && e.target.id;
+  if (id === "cvAmt") conv.amount = e.target.value;
+  else if (id === "cvUnit") conv.unit = e.target.value;
+  else if (id === "cvIng") conv.ing = parseInt(e.target.value, 10) || 0;
+  else if (id === "cvTemp") conv.temp = e.target.value;
+  else if (id === "cvTempU") conv.tempUnit = e.target.value;
+  else return;
+  if (id.indexOf("cvTemp") === 0) $("cvTempOut").innerHTML = tempResult();
+  else $("cvOut").innerHTML = convResults();
+}
+document.addEventListener("input", onConvInput);
+document.addEventListener("change", onConvInput);
+
+/* ---------- shopping list ---------- */
+function trim(s) { return String(s == null ? "" : s).replace(/^\s+|\s+$/g, ""); }
+
+function loadShop() {
+  var s = null;
+  try { s = JSON.parse(store.get("shop") || "null"); } catch (e) {}
+  if (!s || !s.recipes) s = { recipes: [], checked: {}, extras: [] };
+  if (!s.checked) s.checked = {};
+  if (!s.extras) s.extras = [];
+  return s;
+}
+state.shop = loadShop();
+state.selecting = false;
+state.selected = {};
+state.prevHash = "";
+
+function saveShop() { store.set("shop", JSON.stringify(state.shop)); updateShopBadge(); }
+function onList(slug) { return state.shop.recipes.indexOf(slug) > -1; }
+function toggleOnList(slug) {
+  var i = state.shop.recipes.indexOf(slug);
+  if (i > -1) state.shop.recipes.splice(i, 1); else state.shop.recipes.push(slug);
+  saveShop();
+}
+function updateShopBadge() {
+  var n = state.shop.recipes.length + state.shop.extras.length;
+  $("shopBtn").innerHTML = "🛒 List" + (n ? " (" + n + ")" : "");
+}
+function updateSelBar() {
+  var n = 0, k;
+  for (k in state.selected) if (state.selected[k]) n++;
+  $("selBar").className = state.selecting ? "selbar" : "selbar hidden";
+  $("selCount").textContent = n ? n + " selected" : "Tap recipes to select";
+  $("selAdd").disabled = !n;
+}
+
+var AISLES = ["Produce", "Meat & Seafood", "Dairy & Refrigerated", "Bakery", "Frozen", "Pantry"];
+var AISLE_RULES = [
+  [4, /\bfrozen\b/],
+  [5, /sauce|paste|\bcans?\b|canned|flakes|powder|dried|seasoning|broth|stock|coconut|vinegar|glaze|cornstarch|\bseeds?\b|panko|breadcrumb/],
+  [1, /chicken|beef|steak|pork|sausage|turkey|shrimp|salmon|tilapia|\bcod\b|fish|bacon|\bham\b|wings|thighs|lamb|prosciutto/],
+  [2, /butter|milk|cream|cheese|mozzarella|parmesan|cheddar|ricotta|cotija|feta|yogurt|\beggs?\b|tofu|tortellini|pesto|dough/],
+  [3, /\bbuns?\b|bread|tortillas?|naan|pita|\brolls?\b|bagels?/],
+  [0, /garlic|onion|shallot|bell pepper|jalape|lemon|lime|tomato|basil|parsley|cilantro|ginger|broccoli|zucchini|potato|lettuce|spinach|mushroom|eggplant|cabbage|coleslaw|carrot|celery|avocado|scallion|vegetables|banana|apple|herbs|kale|cucumber|\bcorn\b/]
+];
+function aisleOf(name) {
+  var n = name.toLowerCase();
+  for (var i = 0; i < AISLE_RULES.length; i++) if (AISLE_RULES[i][1].test(n)) return AISLE_RULES[i][0];
+  return 5;
+}
+
+var PREP_RE = /\b(minced|sliced|diced|chopped|grated|beaten|halved|cubed|juiced|peeled|deveined|zested|crushed|melted|softened|optional|for serving|to taste|room temperature)\b/i;
+var QTY_RE = /^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?\s*[½¼¾⅓⅔⅛]?|[½¼¾⅓⅔⅛])\s+(.+)$/;
+var UNIT_RE = /^(tsp|teaspoons?|tbsp|tablespoons?|cups?|oz|ounces?|lbs?|pounds?|cans?|packets?|packages?|blocks?|bunch(?:es)?|cloves?|heads?|pints?|g|kg|ml)\.?\s+(.+)$/i;
+var UNIT_NORM = { teaspoon: "tsp", teaspoons: "tsp", tablespoon: "tbsp", tablespoons: "tbsp", cups: "cup", ounce: "oz", ounces: "oz",
+  lbs: "lb", pound: "lb", pounds: "lb", cans: "can", packets: "packet", packages: "package", blocks: "block", bunches: "bunch",
+  cloves: "clove", heads: "head", pints: "pint" };
+var UNIT_PLURAL = { cup: "cups", can: "cans", packet: "packets", package: "packages", block: "blocks", bunch: "bunches",
+  clove: "cloves", head: "heads", pint: "pints" };
+
+// "3 garlic cloves, minced" -> {qty: 3, unit: "", name: "garlic cloves"}
+function parseIng(line) {
+  var s = trim(line), c = s.lastIndexOf(",");
+  if (c > -1 && PREP_RE.test(s.slice(c + 1))) s = trim(s.slice(0, c));
+  s = trim(s.replace(/\s*\(optional\)/i, ""));
+  var m = QTY_RE.exec(s);
+  if (!m) return { qty: null, unit: "", name: s };
+  var q = parseAmount(m[1]);
+  if (!(q > 0)) return { qty: null, unit: "", name: s };
+  var rest = m[2], unit = "", u = UNIT_RE.exec(rest);
+  if (u) { unit = u[1].toLowerCase(); unit = UNIT_NORM[unit] || unit; rest = u[2]; }
+  return { qty: q, unit: unit, name: trim(rest) };
+}
+
+function pluralize(name) {
+  var m = /^(.*?)([A-Za-z]+)([^A-Za-z]*)$/.exec(name);
+  if (!m) return name;
+  var w = m[2];
+  if (/s$/i.test(w)) return name;
+  if (/o$/i.test(w) || /(ch|sh|x)$/i.test(w)) w += "es";
+  else if (/[^aeiou]y$/i.test(w)) w = w.slice(0, -1) + "ies";
+  else w += "s";
+  return m[1] + w + m[3];
+}
+
+function shopItems() {
+  var items = {}, list = [], recipes = [], i, j;
+  function add(line, src, extra) {
+    var p = parseIng(line);
+    if (!p.name) return;
+    var key = (p.qty == null ? "t|" : p.unit + "|") + p.name.toLowerCase(), it = items[key];
+    if (!it) {
+      it = items[key] = { key: key, qty: p.qty, unit: p.unit, name: p.name, n: 0, single: true, sources: [], extra: null, aisle: aisleOf(p.name) };
+      list.push(it);
+    } else if (p.qty != null) it.qty += p.qty;
+    it.n++;
+    if (p.qty != null && p.qty > 1) it.single = false;
+    if (src && it.sources.indexOf(src) === -1) it.sources.push(src);
+    if (extra) it.extra = line;
+  }
+  for (i = 0; i < state.shop.recipes.length; i++) {
+    var r = state.bySlug[state.shop.recipes[i]];
+    if (!r) continue;
+    recipes.push(r);
+    for (j = 0; j < r.ingredients.length; j++) {
+      var line = r.ingredients[j];
+      if (/:$/.test(line) || /^#/.test(line)) continue;
+      add(line, r.title, false);
+    }
+  }
+  for (i = 0; i < state.shop.extras.length; i++) add(state.shop.extras[i], null, true);
+  return { items: list, recipes: recipes };
+}
+
+function itemText(it) {
+  if (it.qty == null) return it.name;
+  var q = it.qty;
+  var qs = Math.abs(q - Math.round(q)) < 0.02 ? String(Math.round(q)) : fmtFrac(q).replace("≈ ", "");
+  var u = it.unit ? (q > 1 && UNIT_PLURAL[it.unit] ? UNIT_PLURAL[it.unit] : it.unit) + " " : "";
+  var name = (!it.unit && it.n > 1 && it.single && q > 1) ? pluralize(it.name) : it.name;
+  return qs + " " + u + name;
+}
+
+function groupItems(items) {
+  var groups = [], i;
+  for (i = 0; i < AISLES.length; i++) groups.push([]);
+  for (i = 0; i < items.length; i++) groups[items[i].aisle].push(items[i]);
+  return groups;
+}
+
+function renderShop() {
+  $("backBtn").className = "icon-btn";
+  $("backBtn").innerHTML = "&#8249; Back";
+  $("sizeBtn").className = "icon-btn hidden";
+  $("shopBtn").className = "icon-btn hidden";
+  $("appTitle").className = "app-title serif hidden";
+  $("listControls").className = "hidden";
+  setStatus("", false);
+
+  var data = shopItems(), groups = groupItems(data.items), i, j, chips = "", body = "", left = 0;
+  for (i = 0; i < data.recipes.length; i++) {
+    chips += '<button class="rchip" data-rm="' + esc(data.recipes[i].slug) + '">' + esc(data.recipes[i].title) +
+      ' <span class="x">&times;</span></button>';
+  }
+  for (i = 0; i < AISLES.length; i++) {
+    if (!groups[i].length) continue;
+    body += '<div class="aisle"><h3>' + esc(AISLES[i]) + '</h3><ul class="ing shop">';
+    for (j = 0; j < groups[i].length; j++) {
+      var it = groups[i][j], done = !!state.shop.checked[it.key];
+      if (!done) left++;
+      body += '<li data-key="' + esc(it.key) + '" class="' + (done ? "done" : "") + '">' + esc(itemText(it)) +
+        (it.sources.length ? '<span class="src">' + esc(it.sources.join(", ")) + "</span>" : "") +
+        (it.extra != null ? '<button class="rmx" data-x="' + esc(it.extra) + '">&times;</button>' : "") + "</li>";
+    }
+    body += "</ul></div>";
+  }
+  var empty = !data.items.length;
+
+  $("main").innerHTML =
+    '<div class="conv shopv"><h1 class="serif">Shopping list</h1>' +
+    '<div class="col"><h2 class="serif">Recipes</h2>' +
+      (chips || '<p class="hint">No recipes yet. Tap <b>Select</b> on the recipe list, or <b>+ Add to shopping list</b> on a recipe.</p>') +
+      (empty ? "" :
+        '<div><button class="btn" id="shopShare">Share list</button>' +
+        '<button class="btn alt" id="shopUncheck">Uncheck all</button>' +
+        '<button class="btn alt" id="shopClear">Clear list</button></div>') +
+    "</div>" +
+    '<div class="col"><h2 class="serif">' + (empty ? "Items" : left + " item" + (left === 1 ? "" : "s") + " to buy") + "</h2>" +
+      '<div class="frow addrow"><div class="field"><input id="shopAdd" type="text" placeholder="Add an item, e.g. milk" autocomplete="off"></div>' +
+      '<button class="btn" id="shopAddBtn">Add</button></div>' +
+      (empty ? "" : '<p class="hint">Tap items you already have to check them off. Share sends only the unchecked items.</p>') +
+      '<div class="aisles">' + body + "</div>" +
+    "</div></div>";
+}
+
+function shopText() {
+  var data = shopItems(), groups = groupItems(data.items), out = "Shopping list\n", i, j, titles = [];
+  for (i = 0; i < AISLES.length; i++) {
+    var lines = "";
+    for (j = 0; j < groups[i].length; j++) if (!state.shop.checked[groups[i][j].key]) lines += "- " + itemText(groups[i][j]) + "\n";
+    if (lines) out += "\n" + AISLES[i].toUpperCase() + "\n" + lines;
+  }
+  for (i = 0; i < data.recipes.length; i++) titles.push(data.recipes[i].title);
+  if (titles.length) out += "\nFor: " + titles.join(", ") + "\n";
+  return out;
+}
+
+function copyText(text) {
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.setAttribute("readonly", "");
+  ta.style.position = "fixed"; ta.style.top = "-1000px"; ta.style.fontSize = "16px";
+  document.body.appendChild(ta);
+  var range = document.createRange(); range.selectNodeContents(ta);
+  var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  ta.setSelectionRange(0, text.length);
+  var ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+  return ok;
+}
+
+function shareShop() {
+  var text = shopText();
+  if (navigator.share) {
+    navigator.share({ title: "Shopping list", text: text })["catch"](function () {});
+    return;
+  }
+  if (copyText(text)) setStatus("Copied. Paste it into Messages, Notes, or Reminders.", false);
+  else alert(text);
+}
+
+function addExtra() {
+  var v = trim($("shopAdd").value);
+  if (!v) return;
+  state.shop.extras.push(v);
+  saveShop(); renderShop();
+  $("shopAdd").focus();
+}
+
+function handleShopClick(t) {
+  var el;
+  if (t.id === "addShop") {
+    var s = currentSlug();
+    if (s) {
+      toggleOnList(s);
+      t.className = "btn" + (onList(s) ? " alt" : "");
+      t.innerHTML = onList(s) ? "✓ On shopping list" : "+ Add to shopping list";
+    }
+    return true;
+  }
+  if (t.id === "selAdd") {
+    for (var i = 0; i < state.recipes.length; i++) {
+      var slug = state.recipes[i].slug;
+      if (state.selected[slug] && !onList(slug)) state.shop.recipes.push(slug);
+    }
+    saveShop();
+    goTo("shop");
+    return true;
+  }
+  if (window.location.hash !== "#shop") return false;
+  if ((el = closest(t, "rmx"))) {
+    var k = state.shop.extras.indexOf(el.getAttribute("data-x"));
+    if (k > -1) state.shop.extras.splice(k, 1);
+    saveShop(); renderShop(); return true;
+  }
+  if ((el = closest(t, "rchip"))) { toggleOnList(el.getAttribute("data-rm")); renderShop(); return true; }
+  if (t.id === "shopShare") { shareShop(); return true; }
+  if (t.id === "shopUncheck") { state.shop.checked = {}; saveShop(); renderShop(); return true; }
+  if (t.id === "shopClear") {
+    if (confirm("Clear the whole shopping list?")) { state.shop = { recipes: [], checked: {}, extras: [] }; saveShop(); renderShop(); }
+    return true;
+  }
+  if (t.id === "shopAddBtn") { addExtra(); return true; }
+  var li = t;
+  while (li && li.tagName !== "LI") li = li.parentNode;
+  if (li && li.getAttribute("data-key") != null) {
+    var key = li.getAttribute("data-key");
+    if (state.shop.checked[key]) delete state.shop.checked[key]; else state.shop.checked[key] = true;
+    saveShop(); renderShop(); return true;
+  }
+  return false;
+}
+
+document.addEventListener("keydown", function (e) {
+  if (e.target && e.target.id === "shopAdd" && (e.keyCode === 13 || e.key === "Enter")) { e.preventDefault(); addExtra(); }
+});
+
+function goTo(view) {
+  var h = window.location.hash;
+  if (h !== "#convert" && h !== "#shop") state.prevHash = h;
+  state.selecting = false; state.selected = {};
+  window.location.hash = view;
+  window.scrollTo(0, 0);
+}
+
 /* ---------- routing ---------- */
 function currentSlug() {
   var m = /^#r=(.+)$/.exec(window.location.hash);
@@ -534,6 +1072,15 @@ function currentSlug() {
 }
 
 function route() {
+  $("backBtn").innerHTML = "&#8249; All recipes";
+  $("convBtn").className = "icon-btn";
+  $("shopBtn").className = "icon-btn";
+  $("selectBtn").className = "icon-btn hidden";
+  $("selBar").className = "selbar hidden";
+  $("main").className = "wrap";
+  updateShopBadge();
+  if (window.location.hash === "#convert") { renderConvert(); return; }
+  if (window.location.hash === "#shop") { renderShop(); return; }
   if (!sheetUrl()) { renderSetup(); return; }
   var slug = currentSlug();
   if (slug && state.bySlug[slug]) { renderRecipe(state.bySlug[slug]); return; }
@@ -557,8 +1104,15 @@ document.addEventListener("click", function (e) {
   var t = e.target, el;
 
   if ((el = closest(t, "chip"))) { state.category = el.getAttribute("data-cat"); renderList(); return; }
+  if (handleShopClick(t)) return;
   if ((el = closest(t, "card"))) {
-    window.location.hash = "r=" + encodeURIComponent(el.getAttribute("data-slug"));
+    var cs = el.getAttribute("data-slug");
+    if (state.selecting) {
+      state.selected[cs] = !state.selected[cs];
+      el.className = "card" + (state.selected[cs] ? " sel" : "");
+      updateSelBar(); return;
+    }
+    window.location.hash = "r=" + encodeURIComponent(cs);
     window.scrollTo(0, 0); return;
   }
 
@@ -591,8 +1145,17 @@ document.addEventListener("click", function (e) {
 });
 
 $("backBtn").addEventListener("click", function () {
-  if (window.location.hash) window.location.hash = "";
+  var h = window.location.hash;
+  var target = (h === "#convert" || h === "#shop") ? state.prevHash : "";
+  if (h !== target) window.location.hash = target;
   route(); window.scrollTo(0, 0);
+});
+$("convBtn").addEventListener("click", function () { goTo("convert"); });
+$("shopBtn").addEventListener("click", function () { goTo("shop"); });
+$("selectBtn").addEventListener("click", function () {
+  state.selecting = !state.selecting;
+  state.selected = {};
+  renderList();
 });
 $("refreshBtn").addEventListener("click", function () { refresh(); });
 $("sizeBtn").addEventListener("click", function () {
