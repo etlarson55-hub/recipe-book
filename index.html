@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Recipes">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Our Recipes</title>
+<!--
+  Written for iPad mini 2 / iOS 12 Safari:
+  - no optional chaining, ?? , replaceAll, flex "gap", aspect-ratio, etc.
+  - grid uses grid-gap; everything else uses margins
+-->
+<style>
+  :root {
+    --bg: #faf6ef;
+    --card: #ffffff;
+    --ink: #2b2620;
+    --muted: #7a7064;
+    --line: #e7dfd2;
+    --accent: #b5532c;
+    --accent-soft: #f6e4da;
+    --done: #b9b0a4;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.45;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .serif { font-family: Georgia, "Times New Roman", serif; }
+
+  /* ---------- top bar ---------- */
+  .top {
+    position: -webkit-sticky; position: sticky; top: 0; z-index: 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 18px 10px;
+  }
+  .top-row { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
+  .app-title { font-size: 28px; font-weight: bold; margin: 0; -webkit-flex: 1; flex: 1; }
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 9px 14px; font-size: 16px; margin-left: 8px;
+  }
+  .icon-btn:active { background: var(--accent-soft); }
+  .search {
+    display: block; width: 100%; margin-top: 12px;
+    font-size: 18px; padding: 11px 14px;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--card);
+    -webkit-appearance: none; appearance: none; outline: none;
+  }
+  .search:focus { border-color: var(--accent); }
+  .chips {
+    white-space: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    margin: 10px -18px 0; padding: 0 18px 2px;
+  }
+  .chip {
+    display: inline-block; margin-right: 8px;
+    border: 1px solid var(--line); background: var(--card);
+    border-radius: 999px; padding: 7px 15px; font-size: 15px;
+  }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .status { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .status.warn { color: var(--accent); }
+
+  /* ---------- list ---------- */
+  .wrap { padding: 16px 18px 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-gap: 14px;
+  }
+  .card {
+    display: block; text-align: left; width: 100%;
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 0; overflow: hidden;
+  }
+  .card:active { border-color: var(--accent); }
+  .card-img { display: block; width: 100%; height: 130px; object-fit: cover; background: var(--accent-soft); }
+  .card-body { padding: 14px 16px 16px; }
+  .card-title { font-size: 20px; font-weight: bold; line-height: 1.25; margin: 0 0 6px; }
+  .card-meta { font-size: 14px; color: var(--muted); }
+  .empty { text-align: center; color: var(--muted); padding: 60px 20px; }
+
+  /* ---------- recipe ---------- */
+  .r-head { margin-bottom: 18px; }
+  .r-title { font-size: 34px; line-height: 1.15; margin: 4px 0 10px; font-weight: bold; }
+  .r-meta span {
+    display: inline-block; margin: 0 8px 8px 0;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 5px 12px; font-size: 15px;
+  }
+  .r-meta b { font-weight: 600; }
+  .r-photo { display: block; width: 100%; max-height: 320px; object-fit: cover; border-radius: 16px; margin-bottom: 18px; }
+  .cols { display: block; }
+  .col { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; }
+  .col h2 { font-size: 22px; margin: 0 0 10px; }
+  .col h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 6px; }
+  .col h3:first-of-type { margin-top: 4px; }
+  ul.ing, ol.steps { list-style: none; margin: 0; padding: 0; }
+  ul.ing li {
+    padding: 9px 0 9px 36px; position: relative; border-bottom: 1px solid var(--line);
+  }
+  ul.ing li:last-child { border-bottom: 0; }
+  ul.ing li:before {
+    content: ""; position: absolute; left: 2px; top: 11px;
+    width: 20px; height: 20px; border: 2px solid var(--line); border-radius: 6px; background: #fff;
+  }
+  ul.ing li.done { color: var(--done); text-decoration: line-through; }
+  ul.ing li.done:before { background: var(--accent); border-color: var(--accent); }
+  ol.steps li {
+    position: relative; padding: 12px 12px 12px 52px; margin: 0 -12px 6px; border-radius: 12px;
+  }
+  ol.steps li .n {
+    position: absolute; left: 12px; top: 11px;
+    width: 30px; height: 30px; border-radius: 15px; text-align: center; line-height: 30px;
+    background: var(--accent-soft); color: var(--accent); font-weight: bold; font-size: 15px;
+  }
+  ol.steps li.cur { background: var(--accent-soft); }
+  ol.steps li.cur .n { background: var(--accent); color: #fff; }
+  ol.steps li.done { color: var(--done); }
+  .notes { white-space: pre-wrap; }
+  .source a { color: var(--accent); word-break: break-all; }
+  .hint { font-size: 13px; color: var(--muted); margin: -4px 0 10px; }
+
+  /* text size options (cooking view) */
+  body.ts-1 .cols { font-size: 19px; }
+  body.ts-2 .cols { font-size: 22px; }
+  body.ts-3 .cols { font-size: 26px; }
+
+  /* landscape / wide: ingredients beside steps */
+  @media (min-width: 900px) {
+    .cols { display: -webkit-flex; display: flex; -webkit-align-items: flex-start; align-items: flex-start; }
+    .col.left { -webkit-flex: 0 0 38%; flex: 0 0 38%; margin-right: 16px;
+      position: -webkit-sticky; position: sticky; top: 90px; }
+    .col.right { -webkit-flex: 1; flex: 1; }
+  }
+
+  /* ---------- setup ---------- */
+  .setup { max-width: 620px; margin: 30px auto; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  .setup h2 { margin-top: 0; }
+  .setup input { width: 100%; font-size: 16px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; -webkit-appearance: none; }
+  .btn { display: inline-block; margin: 14px 10px 0 0; padding: 11px 18px; border-radius: 12px; border: 0; background: var(--accent); color: #fff; font-size: 16px; }
+  .btn.alt { background: var(--accent-soft); color: var(--accent); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body class="ts-1">
+
+<div class="top" id="top">
+  <div class="top-row">
+    <button class="icon-btn hidden" id="backBtn">&#8249; All recipes</button>
+    <h1 class="app-title serif" id="appTitle">Our Recipes</h1>
+    <button class="icon-btn hidden" id="sizeBtn" title="Text size">Aa</button>
+    <button class="icon-btn" id="refreshBtn" title="Refresh">&#8635; Refresh</button>
+  </div>
+  <div id="listControls">
+    <input class="search" id="search" type="search" placeholder="Search recipes or ingredients" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="status" id="status"></div>
+</div>
+
+<div class="wrap" id="main"></div>
+
+<script>
+/* =====================================================================
+   SETUP: paste your Google Sheet's "Publish to web" CSV link below.
+   (File > Share > Publish to web > choose the sheet > CSV > Publish)
+   ===================================================================== */
+var SHEET_CSV_URL = "";
+var APP_TITLE = "Our Recipes";
+/* ===================================================================== */
+
+var SAMPLE_CSV =
+  'Title,Category,Servings,Prep Time,Cook Time,Ingredients,Steps,Notes,Source,Photo URL\n' +
+  '"Weeknight Chicken Tacos","Dinner, Quick",4,10 min,15 min,' +
+  '"1.5 lb chicken thighs\n1 tbsp chili powder\n1 tsp cumin\n1 tsp garlic powder\n1 lime\n8 small tortillas\nToppings:\nShredded cabbage\nCotija cheese\nSalsa",' +
+  '"Toss chicken with chili powder, cumin, garlic powder, and a big pinch of salt.\nCook in a hot skillet 6-7 minutes per side until cooked through.\nRest 5 minutes, then slice and squeeze lime over the top.\nWarm tortillas and build tacos with toppings.",' +
+  '"Works great on the grill too.",,\n' +
+  '"Banana Bread","Baking, Breakfast",1 loaf,15 min,60 min,' +
+  '"3 very ripe bananas\n1/3 cup melted butter\n3/4 cup sugar\n1 egg\n1 tsp vanilla\n1 tsp baking soda\nPinch of salt\n1.5 cups flour",' +
+  '"Heat oven to 350F and grease a loaf pan.\nMash bananas, then stir in melted butter.\nMix in sugar, egg, and vanilla.\nSprinkle in baking soda and salt, then fold in flour until just combined.\nBake 55-65 minutes, until a toothpick comes out clean.",' +
+  '"Add a handful of chocolate chips if you like.",,\n';
+
+var store = {
+  get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+  set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} },
+  del: function (k) { try { window.localStorage.removeItem(k); } catch (e) {} }
+};
+
+var state = {
+  recipes: [],
+  bySlug: {},
+  category: "All",
+  query: "",
+  checked: {},     // slug -> {ingredientIndex: true}
+  stepCur: {},     // slug -> current step index
+  textSize: parseInt(store.get("textSize") || "1", 10),
+  lastUpdated: null,
+  offline: false,
+  error: ""
+};
+
+var $ = function (id) { return document.getElementById(id); };
+
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+/* ---------- CSV parsing (handles quotes, commas, and line breaks in cells) ---------- */
+function parseCSV(text) {
+  var rows = [], row = [], field = "", inQ = false, i = 0, c;
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  while (i < text.length) {
+    c = text.charAt(i);
+    if (inQ) {
+      if (c === '"') {
+        if (text.charAt(i + 1) === '"') { field += '"'; i += 2; continue; }
+        inQ = false; i++; continue;
+      }
+      field += c; i++; continue;
+    }
+    if (c === '"') { inQ = true; i++; continue; }
+    if (c === ",") { row.push(field); field = ""; i++; continue; }
+    if (c === "\r") { i++; continue; }
+    if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+    field += c; i++;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+var COLUMN_NAMES = {
+  title: ["title", "name", "recipe", "recipename"],
+  category: ["category", "categories", "type", "tags", "tag"],
+  servings: ["servings", "serves", "yield", "makes"],
+  prep: ["prep", "preptime"],
+  cook: ["cook", "cooktime"],
+  total: ["time", "totaltime"],
+  ingredients: ["ingredients", "ingredient"],
+  steps: ["steps", "directions", "instructions", "method"],
+  notes: ["notes", "note", "tips"],
+  source: ["source", "link", "url", "from"],
+  photo: ["photo", "photourl", "image", "imageurl", "picture"]
+};
+
+function normHeader(h) { return String(h).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+function splitLines(s) {
+  s = String(s || "").replace(/\r/g, "");
+  var parts = s.indexOf("\n") > -1 ? s.split("\n") : s.split("|");
+  var out = [];
+  for (var i = 0; i < parts.length; i++) {
+    var t = parts[i].replace(/^\s+|\s+$/g, "");
+    if (t) out.push(t);
+  }
+  return out;
+}
+
+function slugify(s) {
+  return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "recipe";
+}
+
+function rowsToRecipes(rows) {
+  if (!rows.length) return [];
+  var header = rows[0], map = {}, k, j, n;
+  for (k in COLUMN_NAMES) {
+    for (j = 0; j < header.length; j++) {
+      n = normHeader(header[j]);
+      if (COLUMN_NAMES[k].indexOf(n) > -1 && map[k] == null) map[k] = j;
+    }
+  }
+  if (map.title == null) throw new Error('No "Title" column found in the sheet.');
+  var get = function (r, key) { return map[key] == null ? "" : (r[map[key]] || "").replace(/^\s+|\s+$/g, ""); };
+  var out = [], seen = {};
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i], title = get(r, "title");
+    if (!title) continue;
+    var slug = slugify(title), base = slug, x = 2;
+    while (seen[slug]) { slug = base + "-" + x; x++; }
+    seen[slug] = true;
+    var cats = get(r, "category").split(/[,;]/), catList = [];
+    for (j = 0; j < cats.length; j++) { var c = cats[j].replace(/^\s+|\s+$/g, ""); if (c) catList.push(c); }
+    out.push({
+      slug: slug,
+      title: title,
+      categories: catList,
+      servings: get(r, "servings"),
+      prep: get(r, "prep"),
+      cook: get(r, "cook"),
+      total: get(r, "total"),
+      ingredients: splitLines(get(r, "ingredients")),
+      steps: splitLines(get(r, "steps")).map(function (s) { return s.replace(/^(step\s*)?\d+[\.\):]\s*/i, ""); }),
+      notes: get(r, "notes"),
+      source: get(r, "source"),
+      photo: get(r, "photo")
+    });
+  }
+  out.sort(function (a, b) { return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1; });
+  return out;
+}
+
+function loadFromCSV(text) {
+  var recipes = rowsToRecipes(parseCSV(text));
+  state.recipes = recipes;
+  state.bySlug = {};
+  for (var i = 0; i < recipes.length; i++) state.bySlug[recipes[i].slug] = recipes[i];
+}
+
+/* ---------- data loading ---------- */
+function sheetUrl() { return SHEET_CSV_URL || store.get("sheetUrl") || ""; }
+
+function refresh() {
+  var url = sheetUrl();
+  if (url === "demo") {
+    loadFromCSV(SAMPLE_CSV);
+    state.lastUpdated = new Date(); state.offline = false; state.error = "";
+    route(); return;
+  }
+  if (!url) { route(); return; }
+  setStatus("Loading recipes…", false);
+  var bust = (url.indexOf("?") > -1 ? "&" : "?") + "_=" + Date.now();
+  fetch(url + bust, { cache: "no-store" })
+    .then(function (res) {
+      if (!res.ok) throw new Error("The sheet returned an error (" + res.status + ").");
+      return res.text();
+    })
+    .then(function (text) {
+      if (/^\s*</.test(text)) throw new Error("That link returned a web page, not CSV. Re-check the Publish to web step and choose CSV.");
+      loadFromCSV(text);
+      store.set("cachedCSV", text);
+      store.set("cachedAt", String(Date.now()));
+      state.lastUpdated = new Date(); state.offline = false; state.error = "";
+      route();
+    })
+    .catch(function (err) {
+      var cached = store.get("cachedCSV");
+      if (cached) {
+        try { loadFromCSV(cached); } catch (e) {}
+        state.offline = true;
+        state.lastUpdated = new Date(parseInt(store.get("cachedAt") || "0", 10));
+        state.error = "";
+      } else {
+        state.error = (err && err.message) ? err.message : "Couldn't load recipes.";
+      }
+      route();
+    });
+}
+
+function timeAgo(d) {
+  if (!d || !d.getTime()) return "";
+  var m = Math.round((Date.now() - d.getTime()) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + " min ago";
+  var h = Math.round(m / 60);
+  if (h < 24) return h + " hr ago";
+  return d.toLocaleDateString();
+}
+
+function setStatus(text, warn) {
+  var el = $("status");
+  el.textContent = text;
+  el.className = "status" + (warn ? " warn" : "");
+}
+
+function updateStatus() {
+  if (state.error) { setStatus(state.error, true); return; }
+  if (!state.lastUpdated) { setStatus("", false); return; }
+  var n = state.recipes.length;
+  var base = n + " recipe" + (n === 1 ? "" : "s");
+  if (state.offline) setStatus(base + " · Offline, showing copy saved " + timeAgo(state.lastUpdated), true);
+  else setStatus(base + " · Updated " + timeAgo(state.lastUpdated), false);
+}
+
+/* ---------- views ---------- */
+function allCategories() {
+  var seen = {}, list = [];
+  for (var i = 0; i < state.recipes.length; i++) {
+    var c = state.recipes[i].categories;
+    for (var j = 0; j < c.length; j++) if (!seen[c[j].toLowerCase()]) { seen[c[j].toLowerCase()] = 1; list.push(c[j]); }
+  }
+  list.sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+  return list;
+}
+
+function matches(r) {
+  if (state.category !== "All") {
+    var ok = false;
+    for (var i = 0; i < r.categories.length; i++) if (r.categories[i].toLowerCase() === state.category.toLowerCase()) ok = true;
+    if (!ok) return false;
+  }
+  var q = state.query.toLowerCase().replace(/^\s+|\s+$/g, "");
+  if (!q) return true;
+  var hay = (r.title + " " + r.categories.join(" ") + " " + r.ingredients.join(" ")).toLowerCase();
+  var words = q.split(/\s+/);
+  for (var w = 0; w < words.length; w++) if (hay.indexOf(words[w]) === -1) return false;
+  return true;
+}
+
+function timeLabel(r) {
+  if (r.total) return r.total;
+  if (r.prep && r.cook) return r.prep + " + " + r.cook;
+  return r.prep || r.cook || "";
+}
+
+function renderList() {
+  $("backBtn").className = "icon-btn hidden";
+  $("sizeBtn").className = "icon-btn hidden";
+  $("appTitle").className = "app-title serif";
+  $("listControls").className = "";
+
+  var cats = ["All"].concat(allCategories()), chips = "";
+  for (var i = 0; i < cats.length; i++) {
+    chips += '<button class="chip' + (cats[i] === state.category ? " on" : "") + '" data-cat="' + esc(cats[i]) + '">' + esc(cats[i]) + "</button>";
+  }
+  $("chips").innerHTML = cats.length > 1 ? chips : "";
+
+  var html = "", shown = 0;
+  for (var j = 0; j < state.recipes.length; j++) {
+    var r = state.recipes[j];
+    if (!matches(r)) continue;
+    shown++;
+    var meta = [];
+    if (r.categories.length) meta.push(esc(r.categories.join(", ")));
+    var t = timeLabel(r); if (t) meta.push(esc(t));
+    html += '<button class="card" data-slug="' + esc(r.slug) + '">' +
+      (r.photo ? '<img class="card-img" src="' + esc(r.photo) + '" alt="" onerror="this.style.display=\'none\'">' : "") +
+      '<div class="card-body"><div class="card-title serif">' + esc(r.title) + '</div>' +
+      '<div class="card-meta">' + meta.join(" · ") + "</div></div></button>";
+  }
+  if (!state.recipes.length && !state.error) $("main").innerHTML = '<div class="empty">No recipes yet. Add some rows to the sheet, then tap Refresh.</div>';
+  else if (!shown && state.recipes.length) $("main").innerHTML = '<div class="empty">No recipes match that search.</div>';
+  else $("main").innerHTML = '<div class="grid">' + html + "</div>";
+  updateStatus();
+}
+
+function renderIngredients(r) {
+  var html = "", checked = state.checked[r.slug] || {}, open = false;
+  for (var i = 0; i < r.ingredients.length; i++) {
+    var line = r.ingredients[i];
+    if (/:$/.test(line) || /^#/.test(line)) {
+      if (open) { html += "</ul>"; open = false; }
+      html += "<h3>" + esc(line.replace(/^#+\s*/, "").replace(/:$/, "")) + "</h3>";
+      continue;
+    }
+    if (!open) { html += '<ul class="ing">'; open = true; }
+    html += '<li data-i="' + i + '" class="' + (checked[i] ? "done" : "") + '">' + esc(line) + "</li>";
+  }
+  if (open) html += "</ul>";
+  return html || '<p class="hint">No ingredients listed.</p>';
+}
+
+function renderSteps(r) {
+  var html = "", cur = state.stepCur[r.slug], n = 0, open = false;
+  for (var i = 0; i < r.steps.length; i++) {
+    var line = r.steps[i];
+    if (/:$/.test(line) || /^#/.test(line)) {
+      if (open) { html += "</ol>"; open = false; }
+      html += "<h3>" + esc(line.replace(/^#+\s*/, "").replace(/:$/, "")) + "</h3>";
+      continue;
+    }
+    if (!open) { html += '<ol class="steps">'; open = true; }
+    n++;
+    var cls = cur == null ? "" : (i === cur ? "cur" : (i < cur ? "done" : ""));
+    html += '<li data-i="' + i + '" class="' + cls + '"><span class="n">' + n + "</span>" + esc(line) + "</li>";
+  }
+  if (open) html += "</ol>";
+  return html || '<p class="hint">No steps listed.</p>';
+}
+
+function renderRecipe(r) {
+  $("backBtn").className = "icon-btn";
+  $("sizeBtn").className = "icon-btn";
+  $("appTitle").className = "app-title serif hidden";
+  $("listControls").className = "hidden";
+
+  var meta = "";
+  if (r.servings) meta += "<span><b>Serves</b> " + esc(r.servings) + "</span>";
+  if (r.prep) meta += "<span><b>Prep</b> " + esc(r.prep) + "</span>";
+  if (r.cook) meta += "<span><b>Cook</b> " + esc(r.cook) + "</span>";
+  if (r.total) meta += "<span><b>Total</b> " + esc(r.total) + "</span>";
+  if (r.categories.length) meta += "<span>" + esc(r.categories.join(", ")) + "</span>";
+
+  var extra = "";
+  if (r.notes) extra += '<div class="col"><h2 class="serif">Notes</h2><div class="notes">' + esc(r.notes) + "</div></div>";
+  if (r.source) {
+    var src = /^https?:\/\//i.test(r.source)
+      ? '<a href="' + esc(r.source) + '" target="_blank" rel="noopener">' + esc(r.source) + "</a>"
+      : esc(r.source);
+    extra += '<div class="col source"><h2 class="serif">Source</h2>' + src + "</div>";
+  }
+
+  $("main").innerHTML =
+    '<div class="r-head"><h1 class="r-title serif">' + esc(r.title) + '</h1><div class="r-meta">' + meta + "</div></div>" +
+    (r.photo ? '<img class="r-photo" src="' + esc(r.photo) + '" alt="" onerror="this.style.display=\'none\'">' : "") +
+    '<div class="cols">' +
+      '<div class="col left" id="ingCol"><h2 class="serif">Ingredients</h2><p class="hint">Tap to check off</p>' + renderIngredients(r) + "</div>" +
+      '<div class="col right" id="stepCol"><h2 class="serif">Steps</h2><p class="hint">Tap a step to mark your place</p>' + renderSteps(r) + "</div>" +
+    "</div>" + extra;
+  updateStatus();
+}
+
+function renderSetup() {
+  $("backBtn").className = "icon-btn hidden";
+  $("sizeBtn").className = "icon-btn hidden";
+  $("appTitle").className = "app-title serif";
+  $("listControls").className = "hidden";
+  setStatus("", false);
+  $("main").innerHTML =
+    '<div class="setup"><h2 class="serif">Connect your recipe sheet</h2>' +
+    "<p>In Google Sheets: <b>File › Share › Publish to web</b>, pick your recipe sheet and <b>CSV</b>, then Publish. Paste the link here.</p>" +
+    '<input id="urlInput" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" autocapitalize="off" autocorrect="off">' +
+    '<div><button class="btn" id="saveUrl">Connect</button><button class="btn alt" id="useDemo">Try with sample recipes</button></div>' +
+    '<p class="hint" style="margin-top:16px">Tip: it\'s easier to paste the link into the <code>SHEET_CSV_URL</code> line at the top of index.html before you upload it.</p></div>';
+}
+
+/* ---------- routing ---------- */
+function currentSlug() {
+  var m = /^#r=(.+)$/.exec(window.location.hash);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+function route() {
+  if (!sheetUrl()) { renderSetup(); return; }
+  var slug = currentSlug();
+  if (slug && state.bySlug[slug]) { renderRecipe(state.bySlug[slug]); return; }
+  renderList();
+}
+
+function applyTextSize() {
+  document.body.className = document.body.className.replace(/\bts-\d\b/g, "") + " ts-" + state.textSize;
+}
+
+/* ---------- events ---------- */
+function closest(el, cls) {
+  while (el && el !== document) {
+    if (el.className && (" " + el.className + " ").indexOf(" " + cls + " ") > -1) return el;
+    el = el.parentNode;
+  }
+  return null;
+}
+
+document.addEventListener("click", function (e) {
+  var t = e.target, el;
+
+  if ((el = closest(t, "chip"))) { state.category = el.getAttribute("data-cat"); renderList(); return; }
+  if ((el = closest(t, "card"))) {
+    window.location.hash = "r=" + encodeURIComponent(el.getAttribute("data-slug"));
+    window.scrollTo(0, 0); return;
+  }
+
+  var slug = currentSlug();
+  if (slug && state.bySlug[slug]) {
+    var r = state.bySlug[slug], li = t;
+    while (li && li.tagName !== "LI") li = li.parentNode;
+    if (li && li.getAttribute("data-i") != null) {
+      var i = parseInt(li.getAttribute("data-i"), 10);
+      if (closest(li, "ing")) {
+        var c = state.checked[slug] || (state.checked[slug] = {});
+        c[i] = !c[i];
+        li.className = c[i] ? "done" : "";
+        return;
+      }
+      if (closest(li, "steps")) {
+        state.stepCur[slug] = state.stepCur[slug] === i ? null : i;
+        $("stepCol").innerHTML = '<h2 class="serif">Steps</h2><p class="hint">Tap a step to mark your place</p>' + renderSteps(r);
+        return;
+      }
+    }
+  }
+
+  if (t.id === "saveUrl") {
+    var v = ($("urlInput").value || "").replace(/^\s+|\s+$/g, "");
+    if (!/^https?:\/\//.test(v)) { alert("That doesn't look like a link. Paste the full https:// address."); return; }
+    store.set("sheetUrl", v); refresh(); return;
+  }
+  if (t.id === "useDemo") { store.set("sheetUrl", "demo"); refresh(); return; }
+});
+
+$("backBtn").addEventListener("click", function () {
+  if (window.location.hash) window.location.hash = "";
+  route(); window.scrollTo(0, 0);
+});
+$("refreshBtn").addEventListener("click", function () { refresh(); });
+$("sizeBtn").addEventListener("click", function () {
+  state.textSize = state.textSize >= 3 ? 1 : state.textSize + 1;
+  store.set("textSize", String(state.textSize));
+  applyTextSize();
+});
+$("search").addEventListener("input", function () { state.query = this.value; renderList(); });
+// Long-press the title to disconnect / change the sheet link
+var pressTimer = null;
+$("appTitle").addEventListener("touchstart", function () {
+  pressTimer = setTimeout(function () {
+    if (confirm("Change the recipe sheet link on this device?")) { store.del("sheetUrl"); store.del("cachedCSV"); route(); }
+  }, 1500);
+});
+$("appTitle").addEventListener("touchend", function () { clearTimeout(pressTimer); });
+window.addEventListener("hashchange", route);
+// Refresh when the app comes back to the foreground (if older than 10 min)
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden && state.lastUpdated && Date.now() - state.lastUpdated.getTime() > 600000) refresh();
+});
+
+/* ---------- start ---------- */
+$("appTitle").textContent = APP_TITLE;
+document.title = APP_TITLE;
+applyTextSize();
+(function boot() {
+  var cached = store.get("cachedCSV");
+  if (cached && sheetUrl() && sheetUrl() !== "demo") {
+    try {
+      loadFromCSV(cached);
+      state.lastUpdated = new Date(parseInt(store.get("cachedAt") || "0", 10));
+      route();
+    } catch (e) {}
+  }
+  refresh();
+})();
+</script>
+</body>
+</html>
